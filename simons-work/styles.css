@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-pixl: #eca749;
+  --color-pixl-light: #eeeeee;
+  --color-pixl-dark: #090909;
+
+  --font-pixl: "Departure Mono", monospace;
+  --default-font-family: var(--font-pixl);
+}
+
+@layer base {
+  *:focus-visible {
+    outline: 2px solid var(--color-pixl);
+  }
+
+  @font-face {
+    font-family: "Departure Mono";
+    src:
+      url("/fonts/DepartureMono-Regular.woff2") format("woff2"),
+      url("/fonts/DepartureMono-Regular.woff") format("woff");
+    font-weight: 400;
+    font-style: normal;
+  }
+}
