@@ -16,63 +16,63 @@ use Inertia\Inertia;
 
 class PostController extends Controller
 {
+    // Show feed
     public function index()
     {
         $profile = Auth::user()->profile;
 
-        $posts = TimelineQuery::forViewer($profile)->get();
+        // Get timeline posts, allow empty collection
+        $posts = TimelineQuery::forViewer($profile)->get() ?? collect();
 
         return Inertia::render('Posts/Index', [
-            'profile' => $profile->toResource(),
+            'profile' => $profile?->toResource(),
             'posts' => $posts->toResourceCollection(),
         ]);
     }
 
+    // Show a single post
     public function show(Profile $profile, Post $post)
     {
-        $post = PostThreadQuery::for($post, Auth::user()?->profile)->load();
+        $postThread = PostThreadQuery::for($post, Auth::user()?->profile)->load();
 
         return Inertia::render('Posts/Show', [
-            'post' => $post->toResource(),
+            'post' => $postThread?->toResource(),
         ]);
     }
 
-    public function store(CreatePostRequest $createPostRequest)
+    // Create a new post
+    public function store(CreatePostRequest $request)
     {
         $profile = Auth::user()->profile;
 
-        Post::publish($profile, $createPostRequest->input('content'));
+        Post::publish($profile, $request->input('content'));
 
         return to_route('posts.index')->with('success', 'Your post is now live!');
     }
 
-    public function reply(Profile $profile, Post $post, CreatePostRequest $createPostRequest): RedirectResponse
+    // Reply to a post
+    public function reply(Profile $profile, Post $post, CreatePostRequest $request): RedirectResponse
     {
         $currentProfile = Auth::user()->profile;
 
-        Post::reply($currentProfile, $post, $createPostRequest->input('content'));
+        Post::reply($currentProfile, $post, $request->input('content'));
 
         return back();
     }
 
-    public function repost(Profile $profile, Post $post)
+    // Repost a post (optional content)
+    public function repost(Profile $profile, Post $post, ?CreatePostRequest $request = null): RedirectResponse
     {
         $currentProfile = Auth::user()->profile;
 
-        Post::repost($currentProfile, $post);
+        $content = $request?->input('content');
+
+        Post::repost($currentProfile, $post, $content);
 
         return to_route('posts.index');
     }
 
-    public function quote(Profile $profile, Post $post, CreatePostRequest $createPostRequest)
-    {
-        $currentProfile = Auth::user()->profile;
-
-        Post::repost($currentProfile, $post, $createPostRequest->input('content'));
-
-        return to_route('posts.index');
-    }
-
+    // Like a post
     public function like(Profile $profile, Post $post): RedirectResponse
     {
         $currentProfile = Auth::user()->profile;
@@ -82,6 +82,7 @@ class PostController extends Controller
         return back();
     }
 
+    // Unlike a post
     public function unlike(Profile $profile, Post $post): RedirectResponse
     {
         $currentProfile = Auth::user()->profile;
@@ -91,17 +92,19 @@ class PostController extends Controller
         return back();
     }
 
+    // Delete a post
     public function destroy(Profile $profile, Post $post): RedirectResponse
     {
-        if (Auth::user()->can('update', $post)) {
+        $currentProfile = Auth::user()->profile;
+
+        if ($currentProfile->can('update', $post)) {
             $post->delete();
         }
 
-        $post
-            ->reposts()
-            ->where('profile_id', Auth::user()->profile->id)
-            ->first()
-            ?->delete();
+        // Delete reposts by current user
+        $post->reposts()
+            ->where('profile_id', $currentProfile->id)
+            ->first()?->delete();
 
         return back();
     }
