@@ -1,7 +1,7 @@
-##!/bin/sh
-# start.sh
+#!/bin/sh
 
-# Optional: Clear Laravel caches at runtime
+
+Clear Laravel caches at runtime
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
