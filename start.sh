@@ -1,10 +1,12 @@
-#!/bin/sh
+##!/bin/sh
 # start.sh
 
-# Clear caches
+# Optional: Clear Laravel caches at runtime
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 php artisan cache:clear
+php artisan optimize
 
-chmod +x start.sh
+# Run Laravel development server
+php artisan serve --host=0.0.0.0 --port=$PORT
