@@ -41,4 +41,7 @@ ENV PORT 10000
 EXPOSE $PORT
 
 # Start Laravel server at runtime (Render will override CMD)
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
+CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=10000 && ./start.sh"]
+
+
+
