@@ -27,29 +27,19 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . .
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Install Node dependencies & build Vite assets
 RUN npm install
 RUN npm run build
 
-# Set permissions for storage and cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+# Make sure required directories exist and are writable
+RUN mkdir -p storage bootstrap/cache \
     && chmod -R 777 storage bootstrap/cache
 
-# Cache Laravel config, routes, views
-RUN php artisan config:clear \
-    && php artisan route:clear \
-    && php artisan view:clear \
-    && php artisan cache:clear \
-    && php artisan optimize  
-    
 # Expose port
 ENV PORT 10000
 EXPOSE $PORT
 
-# Start Laravel server
+# Default command to run Laravel at runtime
 CMD php artisan serve --host=0.0.0.0 --port=$PORT
-
-
-
