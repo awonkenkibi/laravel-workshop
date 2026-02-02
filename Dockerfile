@@ -34,6 +34,7 @@ RUN npm install
 RUN npm run build
 
 # Set permissions for storage and cache
+RUN chown -R www-data:www-data storage bootstrap/cache
 RUN chmod -R 777 storage bootstrap/cache
 
 # Make start.sh executable
