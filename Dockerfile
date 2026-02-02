@@ -38,9 +38,14 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Cache Laravel config, routes, views
-RUN php artisan config:cache \
+RUN php artisan config:clear \
+    && php artisan route:clear \
+    && php artisan view:clear \
+    && php artisan cache:clear \
+    && php artisan config:cache \
     && php artisan route:cache \
-    && php artisan view:cache
+    php artisan view:cache
+
 
 # Expose port
 ENV PORT 10000
@@ -48,3 +53,6 @@ EXPOSE $PORT
 
 # Start Laravel server
 CMD php artisan serve --host=0.0.0.0 --port=$PORT
+
+
+
