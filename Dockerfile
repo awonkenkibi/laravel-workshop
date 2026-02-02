@@ -27,19 +27,18 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . .
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 # Install Node dependencies & build Vite assets
 RUN npm install
 RUN npm run build
 
-# Make sure required directories exist and are writable
-RUN mkdir -p storage bootstrap/cache \
-    && chmod -R 777 storage bootstrap/cache
+# Set permissions for storage and cache
+RUN chmod -R 777 storage bootstrap/cache
 
 # Expose port
 ENV PORT 10000
 EXPOSE $PORT
 
-# Default command to run Laravel at runtime
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+# Start Laravel server at runtime (Render will override CMD)
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
